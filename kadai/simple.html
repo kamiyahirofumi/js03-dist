@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/earlyaccess/sawarabimincho.css" rel="stylesheet" />
+<title>飲みログ</title>
+</head>
+<body>
+
+<!-- TOP画面 -->
+<div id = "top">
+    <h1>XXXXXXXX</h1>
+    <!-- <a href="" class="tokoBtn">投稿</a> -->
+    <!-- <a href="" class="kensakuBtn">検索</a> -->
+    <button class="tokoBtn silver">投稿</button>
+    <button class="kensakuBtn silver">検索</button>
+</div>
+
+<!-- 投稿画面 -->
+<div id ="contribution">
+        <!--
+            検索機能を付けたい
+            入力必須画面を付けたい
+            編集画面をつけたい
+            日付を追加
+            続けて投稿するとバグ
+        -->
+    <h2>御薦めレストランを投稿</h2>
+    <div id="formSpace">    
+        <table id="tokoForm">
+            <tr>
+                <th>投稿者名</th>
+                <td><input type="text" id="contributor"></td>
+            </tr>
+            <tr>
+                <th>使用機会</th>
+                <td>
+                    <input type="radio" name="occasion" value="会食（夕食）" checked> 会食（夕食）
+                    <input type="radio" name="occasion" value="会食（昼食）"> 会食（昼食）
+                    <input type="radio" name="occasion" value="社内イベント"> 社内イベント
+                    <input type="radio" name="occasion" value="合コン">合コン
+                    <input type="radio" name="occasion" value="その他"> その他
+                </td>
+            </tr>
+            <tr>
+                <th>主要出席者</th>
+                <td><input type="text" id="person"></td>
+            </tr>
+            <tr>
+                <th>価格帯</th>
+                <td>
+                    <input type="radio" name="price" value="5000円以下" checked> 5000円以下
+                    <input type="radio" name="price" value="5000円超～1万円以下"> 5000円超～1万円以下
+                    <input type="radio" name="price" value="1万円超"> 1万円超                <input type="radio" id="price"> その他
+                </td>
+            </tr>
+            <tr>
+                <th>レストラン名</th>
+                <td><input type="text" id="restaurant"></td>
+            </tr>
+            <tr>
+                <th>URL</th>
+                <td><input type="text" id="url"></td>
+            </tr>
+            <tr>
+                <th>ジャンル</th>
+                <td>
+                    <input type="radio" name="genre" value="和食" checked>和食
+                    <input type="radio" name="genre" value="イタリアン">イタリアン
+                    <input type="radio" name="genre" value="中華">中華
+                    <input type="radio" name="genre" value="その他">その他
+                </td>
+            </tr>
+            <tr>
+                <th>場所</th>
+                <td><input type="text" id="place"></td>
+            </tr>
+            <tr>
+                <th>備考</th>
+                <td><textarea name="" id="text" cols="30" rows="10"></textarea></td>
+            </tr>
+        </table>
+    </div>    
+    <div id="contGamenBtn">
+        <button id="send" class="silver">投稿</button>
+        <button class="topBtn silver">トップ画面</button>
+    </div>
+</div>
+
+<!--検索画面 -->
+<div id = serch>
+    <h2>御薦めレストランリスト</h2>
+    <div id="tableSpace"> 
+    <table id ="output">
+        <tr>
+            <th>使用機会</th>
+            <th>価格帯</th>
+            <th>ジャンル</th>
+            <th>レストラン名</th>
+            <th>URL</th>
+            <!-- <th>削除</th> -->
+        </tr>
+    </table>
+    </div>
+    <div id="serchGamenBtn">
+        <button class="topBtn silver">トップ画面</button>
+        <button class="tokoBtn silver">投稿画面</button>
+    </div>
+
+    <select id="oSelect">
+        <option value="">使用機会で絞り込み</del></option>
+        <option value="会食（夕食）">会食（夕食）</option>
+        <option value="会食（昼食）">会食（昼食）</option>
+        <option value="社内イベント">社内イベント</option>
+        <option value="合コン">合コン</option>
+    </select>
+    <select id="pSelect">
+        <option value="">価格帯で絞り込み</option>
+        <option value="5000円以下">5000円以下</option>
+        <option value="5000円超～1万円以下">5000円超～1万円以下</option>
+        <option value="1万円超">1万円超</option>
+    </select>
+    <select id="gSelect">
+        <option value="">ジャンルで絞り込み</option>
+        <option value="和食">和食</option>
+        <option value="イタリアン">イタリアン</option>
+        <option value="中華">中華</option>
+    </select>
+</div>
+
+
+
+<!-- JQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<!-- JQuery -->
+
+
+<!--** 以下Firebase **-->
+
+<script type="module">
+    $("#serch").hide();
+    $("#contribution").hide();
+    $("#fin").hide();
+
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.8.1/firebase-app.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+    import { getDatabase, ref, push, set, onChildAdded, remove, onChildRemoved }
+        from "https://cdnjs.cloudflare.com/ajax/libs/firebase/9.8.1/firebase-database.min.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwFq89c64crX2e-4jeAEf-m_hh0dHAnUk",
+      authDomain: "snskadai.firebaseapp.com",
+      projectId: "snskadai",
+      storageBucket: "snskadai.appspot.com",
+      messagingSenderId: "357565890793",
+      appId: "1:357565890793:web:147b552b5b43b50cd6f078"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const dbRef = ref(db, "chat");
+
+
+    $(".tokoBtn").on("click",function(){
+        $("#top").hide();
+        $("#contribution").show();
+        $('#send').on('click', function(){
+            const msg = {
+                contributor: $("#contributor").val(),
+                // occasion: $("#occasion").val(),
+                occasion: $('input:radio[name="occasion"]:checked').val(),
+                person: $("#person").val(),
+                price: $('input:radio[name="price"]:checked').val(),
+                restaurant: $("#restaurant").val(),
+                url: $("#url").val(),
+                genre: $('input:radio[name="genre"]:checked').val(),
+                place: $("#place").val(),
+                text: $("#text").val()
+            }
+            console.log(msg);
+            const newPostRef = push(dbRef);
+            set(newPostRef, msg);
+            alert("投稿完了");
+            $("#top").show();
+            // $("#fin").show();
+            $("#contribution").hide();
+        });
+    });
+
+    $(".kensakuBtn").on("click",function(){
+        $("#top").hide();
+        $("#serch").show();
+        onChildAdded(dbRef,function(data){
+            const msg = data.val();
+            const key = data.key;
+            const h =             // `<p>${msg.contributor}: ${msg.text}</p>`        
+            `<tr>
+            <td>${msg.occasion}</td>
+            <td>${msg.price}</td>
+            <td>${msg.genre}</td>
+            <td>${msg.restaurant}</td>
+            <td>${msg.url}</td>
+            // <td><button>×</button></td>
+            </tr>`
+            $("#output").append(h);
+        });
+        jQuery(function($){
+            $("#oSelect").change(function(){
+                var selectVal = $("#oSelect option:selected").val();
+                $.each($("#output tr"), function(index, element){
+                    if(selectVal == ""){
+                        $(element).css("display", "table-row");
+                        return true;
+                    }
+                    var rowText = $(element).text();
+                    if(rowText.indexOf(selectVal)!=-1){
+                        $(element).css("display", "table-row");
+                    }else{
+                        $(element).css("display", "none");
+                    }
+                    }) 
+            });
+        });
+    });
+    jQuery(function($){
+            $("#pSelect").change(function(){
+                var selectVal2 = $("#pSelect option:selected").val();
+                $.each($("#output tr"), function(index, element){
+                    if(selectVal2 == ""){
+                        $(element).css("display", "table-row");
+                        return true;
+                    }
+                    var rowText = $(element).text();
+                    if(rowText.indexOf(selectVal2)!=-1){
+                        $(element).css("display", "table-row");
+                    }else{
+                        $(element).css("display", "none");
+                    }
+                    }) 
+            });
+        });
+        jQuery(function($){
+            $("#gSelect").change(function(){
+                var selectVal3 = $("#gSelect option:selected").val();
+                $.each($("#output tr"), function(index, element){
+                    if(selectVal3 == ""){
+                        $(element).css("display", "table-row");
+                        return true;
+                    }
+                    var rowText = $(element).text();
+                    if(rowText.indexOf(selectVal3)!=-1){
+                        $(element).css("display", "table-row");
+                    }else{
+                        $(element).css("display", "none");
+                    }
+                    }) 
+            });
+        });
+
+
+
+$(".topBtn").on("click",function(){
+    $("#top").show();
+    $("#contribution").hide();
+    $("#serch").hide();
+    $("#fin").hide();
+});
+$(".tokoBtn").on("click",function(){
+    $("#top").hide();
+    $("#contribution").show();
+    $("#serch").hide();
+    $("#fin").hide();
+});
+$(".kensakuBtn").on("click",function(){
+    $("#top").hide();
+    $("#contribution").hide();
+    $("#serch").show();
+    $("#fin").hide();
+});
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

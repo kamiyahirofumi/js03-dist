@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Chatアプリ</title>
+</head>
+<body>
+
+<!-- コンテンツ表示画面 -->
+
+<div>
+    名前: <input type="text" id="uname">
+</div>
+<div>
+    <textarea name="" id="text" cols="30" rows="10"></textarea>
+    <button id="send">送信</button>
+</div>
+<div id="output"></div>
+
+
+
+
+
+
+<!--/ コンテンツ表示画面 -->
+
+
+
+<!-- JQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<!-- JQuery -->
+
+
+<!--** 以下Firebase **-->
+
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.8.1/firebase-app.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    import { getDatabase, ref, push, set, onChildAdded, remove, onChildRemoved }
+        from "https://cdnjs.cloudflare.com/ajax/libs/firebase/9.8.1/firebase-database.min.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyA7tFJV-k7EObdHpStK-M3WfMfltmhWjhg",
+      authDomain: "fir-demo-804bf.firebaseapp.com",
+      projectId: "fir-demo-804bf",
+      storageBucket: "fir-demo-804bf.appspot.com",
+      messagingSenderId: "741575254495",
+      appId: "1:741575254495:web:0681f0ed800f6e5c86246a"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+
+    const db = getDatabase(app);
+    const dbRef = ref(db, "chat");
+
+    $('#send').on('click', function(){
+        const msg = {
+            uname: $("#uname").val(),
+            text: $("#text").val()
+        }
+        const newPostRef = push(dbRef);
+        set(newPostRef, msg);
+    });
+
+    onChildAdded(dbRef,function(data){
+        const msg = data.val();
+        const key = data.key;
+        const h = `<p>${msg.uname}: ${msg.text}</p>`
+        $("#output").append(h);
+
+    });
+
+    $('#text').on('keydown',function(e){
+        if(e.keyCode === 13){
+            const msg = {
+            uname: $("#uname").val(),
+            text: $("#text").val()
+            }
+            const newPostRef = push(dbRef);
+            set(newPostRef, msg);
+        }
+        console.log(e.keyCode);
+    });
+
+
+
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
